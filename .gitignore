@@ -1,0 +1,18 @@
+﻿# Java / Maven
+nexusmarket/target/
+*.class
+
+# IDE
+.idea/
+.vscode/
+
+# Operating System
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment / secrets
+.env
+*.env
