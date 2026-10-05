@@ -1,6 +1,6 @@
 package application.domain.valueobjects;
 
-public enum SystemRole {
+public enum UserRole {
     BUYER,
     SELLER,
     LOGISTICS_OPERATOR,

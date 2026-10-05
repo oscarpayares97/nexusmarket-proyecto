@@ -1,9 +1,9 @@
 package application.domain.valueobjects;
 
 public enum MovementType {
-    ENTRY,
+    INFLOW,
     RESERVATION,
-    SALE_EXIT,
+    SALE,
     ADJUSTMENT,
-    CUSTOMER_RETURN
+    RETURN
 }

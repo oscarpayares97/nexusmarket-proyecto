@@ -1,6 +1,6 @@
 package application.domain.ports.out;
 
-import application.domain.models.InventoryItem;
+import application.domain.models.Inventory;
 import application.domain.models.InventoryMovement;
 
 import java.util.List;
@@ -8,11 +8,11 @@ import java.util.Optional;
 
 public interface InventoryRepositoryPort {
 
-    InventoryItem save(InventoryItem item);
+    Inventory save(Inventory item);
 
-    Optional<InventoryItem> findByProductAndWarehouse(Long productId, Long warehouseId);
+    Optional<Inventory> findByProductAndWarehouse(Long productId, Long warehouseId);
 
-    List<InventoryItem> findByProductId(Long productId);
+    List<Inventory> findByProductId(Long productId);
 
     InventoryMovement saveMovement(InventoryMovement movement);
 

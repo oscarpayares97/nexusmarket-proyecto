@@ -53,9 +53,9 @@ class OrderTest {
         order.addItem(shirt(), 1);
         order.confirm("Calle 1");
         order.markPaid();
-        order.markDispatched();
-        order.markCompleted();
-        assertEquals(OrderStatus.COMPLETED, order.getStatus());
+        order.markShipped();
+        order.markDelivered();
+        assertEquals(OrderStatus.DELIVERED, order.getStatus());
     }
 
     @Test
@@ -64,8 +64,8 @@ class OrderTest {
         order.addItem(shirt(), 1);
         order.confirm("Calle 1");
         order.markPaid();
-        order.markDispatched();
-        order.markCompleted();
+        order.markShipped();
+        order.markDelivered();
         assertThrows(InvalidStatusTransitionException.class, () -> order.addItem(shirt(), 1));
     }
 
@@ -74,6 +74,6 @@ class OrderTest {
         Order order = new Order(null, 10L);
         order.addItem(shirt(), 1);
         order.confirm("Calle 1");
-        assertThrows(InvalidStatusTransitionException.class, () -> order.markDispatched());
+        assertThrows(InvalidStatusTransitionException.class, () -> order.markShipped());
     }
 }

@@ -60,7 +60,7 @@ public class Order {
     }
 
     public void removeItem(Long productId) {
-        requireStatus(OrderStatus.CART, "mModifica el producto");
+        requireStatus(OrderStatus.CART, "Modifica el producto");
         for (int i = 0; i < items.size(); i++) {
             if (Objects.equals(items.get(i).getProductId(), productId)) {
                 items.remove(i);
@@ -90,9 +90,9 @@ public class Order {
 
     // ---------- Ciclo de vida ----------
     public void confirm(String deliveryAddress) {
-        requireStatus(OrderStatus.CART, "cConfirmar la orden");
+        requireStatus(OrderStatus.CART, "Confirmar la orden");
         if (items.isEmpty()) {
-            throw new InvalidDataException("El carrito esta vacaio.");
+            throw new InvalidDataException("El carrito esta vacio.");
         }
         this.deliveryAddress = Guard.requireText(deliveryAddress, "La dirección de entrega");
         this.status = OrderStatus.PENDING_PAYMENT;
@@ -103,21 +103,21 @@ public class Order {
         this.status = OrderStatus.PAID;
     }
 
-    public void markDispatched() {
+    public void markShipped() {
         requireStatus(OrderStatus.PAID, "Despacho");
-        this.status = OrderStatus.DISPATCHED;
+        this.status = OrderStatus.SHIPPED;
     }
 
-    public void markCompleted() {
-        requireStatus(OrderStatus.DISPATCHED, "realizar la entrega");
-        this.status = OrderStatus.COMPLETED;
+    public void markDelivered() {
+        requireStatus(OrderStatus.SHIPPED, "realizar la entrega");
+        this.status = OrderStatus.DELIVERED;
     }
 
     // Regla central: ¿se puede hacer esta acción en el estado actual?
     private void requireStatus(OrderStatus expected, String action) {
-        if (status == OrderStatus.COMPLETED) {
+        if (status == OrderStatus.DELIVERED) {
             throw new InvalidStatusTransitionException(
-                "Un pedido ya completado no se puede modificar bajo ninguna circunstancia.");
+                "Un pedido entregado no se puede modificar bajo ninguna circunstancia.");
         }
         if (status != expected) {
             throw new InvalidStatusTransitionException("No se puede " + action + ": El orden es "

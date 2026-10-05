@@ -5,7 +5,7 @@ import application.domain.exceptions.InvalidDataException;
 import application.domain.models.Buyer;
 import application.domain.models.User;
 import application.domain.ports.in.RegisterBuyerUseCase.Command;
-import application.domain.valueobjects.SystemRole;
+import application.domain.valueobjects.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +39,7 @@ class RegisterBuyerServiceTest {
         assertEquals("Street 10 #5-20", buyer.getPrimaryAddress());
 
         User user = users.findById(buyer.getUserId()).orElseThrow();
-        assertEquals(SystemRole.BUYER, user.getRole());
+        assertEquals(UserRole.BUYER, user.getRole());
         assertEquals("hashed:secret123", user.getPasswordHash());   // nunca se guarda la clave en claro
     }
 

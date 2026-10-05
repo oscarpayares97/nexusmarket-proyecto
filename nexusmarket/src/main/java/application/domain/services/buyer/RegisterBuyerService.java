@@ -9,7 +9,7 @@ import application.domain.ports.in.RegisterBuyerUseCase;
 import application.domain.ports.out.BuyerRepositoryPort;
 import application.domain.ports.out.PasswordServicePort;
 import application.domain.ports.out.UserRepositoryPort;
-import application.domain.valueobjects.SystemRole;
+import application.domain.valueobjects.UserRole;
 
 public class RegisterBuyerService implements RegisterBuyerUseCase {
 
@@ -29,7 +29,7 @@ public class RegisterBuyerService implements RegisterBuyerUseCase {
 
     @Override
     public Buyer register(Command command) {
-        // 1) Validar todo antes de guardar
+        //  Validar todo antes de guardar
         Guard.requireText(command.primaryAddress(), "La primera direccion");
         if (command.rawPassword() == null || command.rawPassword().length() < MIN_PASSWORD_LENGTH) {
             throw new InvalidDataException("La contraseña no puede tener mas de 8 caracteres.");
@@ -41,13 +41,13 @@ public class RegisterBuyerService implements RegisterBuyerUseCase {
             throw new DuplicateEntityException("Ya existe un usuario con este email.");
         }
 
-        // 2) Crear el usuario (el modelo valida nombre, correo, etc.) y guardarlo
+        //  Crear el usuario (el modelo valida nombre, correo, etc.) y guardarlo
         String passwordHash = passwordService.encode(command.rawPassword());
         User user = new User(null, command.document(), command.fullName(),
-                command.email(), passwordHash, SystemRole.BUYER);
+                command.email(), passwordHash, UserRole.BUYER);
         User savedUser = userRepository.save(user);
 
-        // 3) Crear y guardar el comprador asociado
+        //  Crear y guardar el comprador asociado
         Buyer buyer = new Buyer(savedUser.getId(), command.primaryAddress());
         return buyerRepository.save(buyer);
     }

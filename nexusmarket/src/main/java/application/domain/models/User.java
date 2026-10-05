@@ -1,7 +1,7 @@
 package application.domain.models;
 
 import application.domain.exceptions.InvalidDataException;
-import application.domain.valueobjects.SystemRole;
+import application.domain.valueobjects.UserRole;
 import application.domain.valueobjects.UserStatus;
 
 public class User {
@@ -11,18 +11,18 @@ public class User {
     private final String fullName;
     private final String email;
     private final String passwordHash;
-    private final SystemRole role;          // un único rol por usuario (RG-02)
+    private final UserRole role;          // un único rol por usuario (RG-02)
     private UserStatus status;
 
     // Para crear un usuario nuevo (inicia ACTIVE)
     public User(Long id, String document, String fullName, String email,
-                String passwordHash, SystemRole role) {
+                String passwordHash, UserRole role) {
         this(id, document, fullName, email, passwordHash, role, UserStatus.ACTIVE);
     }
 
     // Para reconstruir un usuario guardado (conserva su estado)
     public User(Long id, String document, String fullName, String email,
-                String passwordHash, SystemRole role, UserStatus status) {
+                String passwordHash, UserRole role, UserStatus status) {
         this.id = id;
         this.document = Guard.requireText(document, "El documento");
         this.fullName = Guard.requireText(fullName, "El nombre completo");
@@ -60,6 +60,6 @@ public class User {
     public String getFullName() { return fullName; }
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
-    public SystemRole getRole() { return role; }
+    public UserRole getRole() { return role; }
     public UserStatus getStatus() { return status; }
 }

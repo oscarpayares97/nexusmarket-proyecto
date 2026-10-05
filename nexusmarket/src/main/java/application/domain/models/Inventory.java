@@ -4,7 +4,7 @@ import application.domain.exceptions.InsufficientStockException;
 import application.domain.exceptions.InvalidDataException;
 import application.domain.valueobjects.InventoryStatus;
 
-public class InventoryItem {
+public class Inventory {
 
     private Long id;
     private final Long productId;
@@ -13,11 +13,11 @@ public class InventoryItem {
     private int reserved;      // unidades apartadas para pedidos
     private InventoryStatus status;
 
-    public InventoryItem(Long id, Long productId, Long warehouseId) {
+    public Inventory(Long id, Long productId, Long warehouseId) {
         this(id, productId, warehouseId, 0, 0, InventoryStatus.AVAILABLE);
     }
 
-    public InventoryItem(Long id, Long productId, Long warehouseId,
+    public Inventory(Long id, Long productId, Long warehouseId,
                          int available, int reserved, InventoryStatus status) {
         Guard.requireNonNull(productId, "El producto");
         Guard.requireNonNull(warehouseId, "El almacen");
