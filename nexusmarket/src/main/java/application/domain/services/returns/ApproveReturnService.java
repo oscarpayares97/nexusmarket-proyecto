@@ -3,12 +3,11 @@ package application.domain.services.returns;
 import application.domain.exceptions.EntityNotFoundException;
 import application.domain.models.ReturnRequest;
 import application.domain.models.User;
-import application.domain.ports.in.ApproveReturnUseCase;
 import application.domain.ports.out.ReturnRepositoryPort;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
 import application.domain.valueobjects.UserRole;
 
-public class ApproveReturnService implements ApproveReturnUseCase {
+public class ApproveReturnService {
 
     private final ReturnRepositoryPort returnRepository;
     private final ValidateRoleAuthorizationService authorization;
@@ -19,7 +18,6 @@ public class ApproveReturnService implements ApproveReturnUseCase {
         this.authorization = authorization;
     }
 
-    @Override
     public ReturnRequest approve(User actor, Long returnId) {
         authorization.requireRole(actor, UserRole.ADMINISTRATOR);
         ReturnRequest returnRequest = returnRepository.findById(returnId)

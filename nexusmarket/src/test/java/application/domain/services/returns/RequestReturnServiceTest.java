@@ -8,7 +8,7 @@ import application.domain.models.Product;
 import application.domain.models.ReturnItem;
 import application.domain.models.ReturnRequest;
 import application.domain.models.User;
-import application.domain.ports.in.RequestReturnUseCase.Command;
+import application.domain.ports.in.BuyerPort.RequestReturnCommand;
 import application.domain.ports.out.OrderRepositoryPort;
 import application.domain.ports.out.ReturnRepositoryPort;
 import application.domain.services.authorization.ValidateOwnershipService;
@@ -64,7 +64,7 @@ class RequestReturnServiceTest {
 
     @Test
     void requestsTheReturnOfDeliveredUnits() {
-        ReturnRequest request = service.request(luis, new Command(10L, Map.of(1L, 1), "Wrong size"));
+        ReturnRequest request = service.request(luis, new RequestReturnCommand(10L, Map.of(1L, 1), "Wrong size"));
         assertEquals(ReturnStatus.REQUESTED, request.getStatus());
         assertEquals(Money.of("35000"), request.total());
     }
@@ -72,7 +72,7 @@ class RequestReturnServiceTest {
     @Test
     void cannotReturnMoreUnitsThanPurchased() {
         assertThrows(InvalidDataException.class,
-                () -> service.request(luis, new Command(10L, Map.of(1L, 4), "Wrong size")));
+                () -> service.request(luis, new RequestReturnCommand(10L, Map.of(1L, 4), "Wrong size")));
     }
 
     @Test
@@ -81,7 +81,7 @@ class RequestReturnServiceTest {
                 List.of(ReturnItem.from(deliveredOrder.getItems().get(0), 2)), "Wrong size");
         when(returns.findByOrderId(10L)).thenReturn(List.of(existing));
         assertThrows(InvalidDataException.class,
-                () -> service.request(luis, new Command(10L, Map.of(1L, 2), "Another reason")));
+                () -> service.request(luis, new RequestReturnCommand(10L, Map.of(1L, 2), "Another reason")));
     }
 
     @Test
@@ -95,12 +95,12 @@ class RequestReturnServiceTest {
         shipped.markShipped();
         when(orders.findById(11L)).thenReturn(Optional.of(shipped));
         assertThrows(InvalidStatusTransitionException.class,
-                () -> service.request(luis, new Command(11L, Map.of(1L, 1), "Wrong size")));
+                () -> service.request(luis, new RequestReturnCommand(11L, Map.of(1L, 1), "Wrong size")));
     }
 
     @Test
     void aBuyerCannotReturnAnotherBuyersOrder() {
         assertThrows(UnauthorizedOperationException.class,
-                () -> service.request(sara, new Command(10L, Map.of(1L, 1), "Wrong size")));
+                () -> service.request(sara, new RequestReturnCommand(10L, Map.of(1L, 1), "Wrong size")));
     }
 }

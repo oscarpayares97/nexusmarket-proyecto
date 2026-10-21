@@ -1,5 +1,6 @@
 package application.domain.services.order;
 
+import application.domain.services.inventory.ReserveInventoryService;
 import application.domain.exceptions.InsufficientStockException;
 import application.domain.exceptions.InvalidDataException;
 import application.domain.exceptions.UnauthorizedOperationException;
@@ -7,7 +8,6 @@ import application.domain.models.Buyer;
 import application.domain.models.Order;
 import application.domain.models.Product;
 import application.domain.models.User;
-import application.domain.ports.in.ReserveInventoryUseCase;
 import application.domain.ports.out.BuyerRepositoryPort;
 import application.domain.ports.out.OrderRepositoryPort;
 import application.domain.ports.out.ProductRepositoryPort;
@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 
 class ConfirmOrderServiceTest {
 
-    private ReserveInventoryUseCase reserveInventory;
+    private ReserveInventoryService reserveInventory;
     private ConfirmOrderService service;
     private Buyer buyer;
 
@@ -44,7 +44,7 @@ class ConfirmOrderServiceTest {
         OrderRepositoryPort orders = mock(OrderRepositoryPort.class);
         BuyerRepositoryPort buyers = mock(BuyerRepositoryPort.class);
         ProductRepositoryPort products = mock(ProductRepositoryPort.class);
-        reserveInventory = mock(ReserveInventoryUseCase.class);
+        reserveInventory = mock(ReserveInventoryService.class);
 
         Product shirt = new Product(1L, 2L, "T-shirt", ProductType.PHYSICAL, Money.of("35000"));
         shirt.publish();

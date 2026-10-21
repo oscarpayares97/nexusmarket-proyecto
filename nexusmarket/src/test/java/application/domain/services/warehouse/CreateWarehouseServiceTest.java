@@ -3,7 +3,7 @@ package application.domain.services.warehouse;
 import application.domain.exceptions.EntityNotFoundException;
 import application.domain.models.User;
 import application.domain.models.Warehouse;
-import application.domain.ports.in.CreateWarehouseUseCase.Command;
+import application.domain.ports.in.AdministratorPort.CreateWarehouseCommand;
 import application.domain.ports.out.SellerRepositoryPort;
 import application.domain.ports.out.WarehouseRepositoryPort;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
@@ -34,7 +34,7 @@ class CreateWarehouseServiceTest {
 
     @Test
     void withoutSellerTheWarehouseBelongsToTheMarketplace() {
-        Warehouse warehouse = service.create(admin, new Command("Central", "Zone 5", null));
+        Warehouse warehouse = service.create(admin, new CreateWarehouseCommand("Central", "Zone 5", null));
         assertEquals(WarehouseType.MARKETPLACE, warehouse.getType());
         assertNull(warehouse.getSellerId());
     }
@@ -42,6 +42,6 @@ class CreateWarehouseServiceTest {
     @Test
     void aSellerWarehouseRequiresAnExistingSeller() {
         assertThrows(EntityNotFoundException.class,
-                () -> service.create(admin, new Command("Branch", "Zone 2", 99L)));
+                () -> service.create(admin, new CreateWarehouseCommand("Branch", "Zone 2", 99L)));
     }
 }

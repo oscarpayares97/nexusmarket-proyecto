@@ -4,13 +4,12 @@ import application.domain.exceptions.EntityNotFoundException;
 import application.domain.models.Order;
 import application.domain.models.Shipment;
 import application.domain.models.User;
-import application.domain.ports.in.ConfirmDeliveryUseCase;
 import application.domain.ports.out.OrderRepositoryPort;
 import application.domain.ports.out.ShipmentRepositoryPort;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
 import application.domain.valueobjects.UserRole;
 
-public class ConfirmDeliveryService implements ConfirmDeliveryUseCase {
+public class ConfirmDeliveryService {
 
     private final ShipmentRepositoryPort shipmentRepository;
     private final OrderRepositoryPort orderRepository;
@@ -24,7 +23,6 @@ public class ConfirmDeliveryService implements ConfirmDeliveryUseCase {
         this.authorization = authorization;
     }
 
-    @Override
     public Shipment confirm(User actor, Long shipmentId) {
         authorization.requireRole(actor, UserRole.LOGISTICS_OPERATOR);
         Shipment shipment = shipmentRepository.findById(shipmentId)

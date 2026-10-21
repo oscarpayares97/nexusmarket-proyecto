@@ -2,11 +2,10 @@ package application.domain.services.inventory;
 
 import application.domain.models.Inventory;
 import application.domain.models.User;
-import application.domain.ports.in.RegisterInventoryEntryUseCase;
 import application.domain.ports.out.InventoryRepositoryPort;
 import application.domain.valueobjects.MovementType;
 
-public class RegisterInventoryEntryService implements RegisterInventoryEntryUseCase {
+public class RegisterInventoryEntryService {
 
     private final InventoryRepositoryPort inventoryRepository;
     private final InventoryOperationGuard guard;
@@ -17,12 +16,11 @@ public class RegisterInventoryEntryService implements RegisterInventoryEntryUseC
         this.guard = guard;
     }
 
-    @Override
-    public Inventory register(User actor, Command command) {
-        Inventory inventory = guard.load(actor, command.productId(), command.warehouseId(), true);
-        inventory.registerEntry(command.quantity());
+    public Inventory register(User actor, Long productId, Long warehouseId, int quantity) {
+        Inventory inventory = guard.load(actor, productId, warehouseId, true);
+        inventory.registerEntry(quantity);
         Inventory saved = inventoryRepository.save(inventory);
-        guard.recordMovement(MovementType.INFLOW, saved, command.quantity(), actor);
+        guard.recordMovement(MovementType.INFLOW, saved, quantity, actor);
         return saved;
     }
 }

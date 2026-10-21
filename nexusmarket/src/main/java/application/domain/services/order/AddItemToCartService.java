@@ -5,13 +5,12 @@ import application.domain.exceptions.InvalidDataException;
 import application.domain.models.Order;
 import application.domain.models.Product;
 import application.domain.models.User;
-import application.domain.ports.in.AddItemToCartUseCase;
 import application.domain.ports.out.OrderRepositoryPort;
 import application.domain.ports.out.ProductRepositoryPort;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
 import application.domain.valueobjects.UserRole;
 
-public class AddItemToCartService implements AddItemToCartUseCase {
+public class AddItemToCartService {
 
     private final OrderRepositoryPort orderRepository;
     private final ProductRepositoryPort productRepository;
@@ -25,7 +24,6 @@ public class AddItemToCartService implements AddItemToCartUseCase {
         this.authorization = authorization;
     }
 
-    @Override
     public Order add(User actor, Long productId, int quantity) {
         authorization.requireRole(actor, UserRole.BUYER);
         Product product = productRepository.findById(productId)

@@ -1,5 +1,6 @@
 package application.domain.services.shipping;
 
+import application.domain.services.inventory.RegisterInventorySaleService;
 import application.domain.exceptions.InvalidDataException;
 import application.domain.exceptions.InvalidStatusTransitionException;
 import application.domain.exceptions.UnauthorizedOperationException;
@@ -7,8 +8,6 @@ import application.domain.models.Order;
 import application.domain.models.Product;
 import application.domain.models.Shipment;
 import application.domain.models.User;
-import application.domain.ports.in.DispatchShipmentUseCase;
-import application.domain.ports.in.RegisterInventorySaleUseCase;
 import application.domain.ports.out.OrderRepositoryPort;
 import application.domain.ports.out.ShipmentRepositoryPort;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
@@ -33,7 +32,7 @@ class ShippingServicesTest {
 
     private OrderRepositoryPort orders;
     private ShipmentRepositoryPort shipments;
-    private RegisterInventorySaleUseCase inventorySale;
+    private RegisterInventorySaleService inventorySale;
     private final ValidateRoleAuthorizationService authorization = new ValidateRoleAuthorizationService();
     private Order paidOrder;
     private Product shirt;
@@ -45,7 +44,7 @@ class ShippingServicesTest {
     void setUp() {
         orders = mock(OrderRepositoryPort.class);
         shipments = mock(ShipmentRepositoryPort.class);
-        inventorySale = mock(RegisterInventorySaleUseCase.class);
+        inventorySale = mock(RegisterInventorySaleService.class);
 
         shirt = new Product(1L, 2L, "T-shirt", ProductType.PHYSICAL, Money.of("35000"));
         paidOrder = new Order(null, 5L);
@@ -98,7 +97,7 @@ class ShippingServicesTest {
         when(shipments.findById(20L)).thenReturn(Optional.of(shipment));
 
         new DispatchShipmentService(shipments, orders, inventorySale, authorization)
-                .dispatch(oscar, new DispatchShipmentUseCase.Command(20L, "FastCarrier", "TR-1"));
+                .dispatch(oscar, 20L, "FastCarrier", "TR-1");
 
         assertEquals(OrderStatus.SHIPPED, paidOrder.getStatus());
         verify(inventorySale).registerSale(oscar, 1L, 7L, 3);
@@ -123,6 +122,6 @@ class ShippingServicesTest {
     void aBuyerCannotDispatchAShipment() {
         DispatchShipmentService service = new DispatchShipmentService(shipments, orders, inventorySale, authorization);
         assertThrows(UnauthorizedOperationException.class,
-                () -> service.dispatch(luis, new DispatchShipmentUseCase.Command(20L, "FastCarrier", "TR-1")));
+                () -> service.dispatch(luis, 20L, "FastCarrier", "TR-1"));
     }
 }

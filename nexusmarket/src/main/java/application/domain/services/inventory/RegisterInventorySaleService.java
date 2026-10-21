@@ -4,11 +4,10 @@ import application.domain.exceptions.EntityNotFoundException;
 import application.domain.models.Inventory;
 import application.domain.models.InventoryMovement;
 import application.domain.models.User;
-import application.domain.ports.in.RegisterInventorySaleUseCase;
 import application.domain.ports.out.InventoryRepositoryPort;
 import application.domain.valueobjects.MovementType;
 
-public class RegisterInventorySaleService implements RegisterInventorySaleUseCase {
+public class RegisterInventorySaleService {
 
     private final InventoryRepositoryPort inventoryRepository;
 
@@ -16,7 +15,6 @@ public class RegisterInventorySaleService implements RegisterInventorySaleUseCas
         this.inventoryRepository = inventoryRepository;
     }
 
-    @Override
     public void registerSale(User operator, Long productId, Long warehouseId, int quantity) {
         Inventory inventory = inventoryRepository.findByProductAndWarehouse(productId, warehouseId)
                 .orElseThrow(() -> new EntityNotFoundException("Inventory not found."));

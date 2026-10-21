@@ -1,27 +1,26 @@
 package application.domain.services.shipping;
 
+import application.domain.services.inventory.RegisterInventorySaleService;
 import application.domain.exceptions.EntityNotFoundException;
 import application.domain.models.Order;
 import application.domain.models.OrderItem;
 import application.domain.models.Shipment;
 import application.domain.models.User;
-import application.domain.ports.in.DispatchShipmentUseCase;
-import application.domain.ports.in.RegisterInventorySaleUseCase;
 import application.domain.ports.out.OrderRepositoryPort;
 import application.domain.ports.out.ShipmentRepositoryPort;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
 import application.domain.valueobjects.UserRole;
 
-public class DispatchShipmentService implements DispatchShipmentUseCase {
+public class DispatchShipmentService {
 
     private final ShipmentRepositoryPort shipmentRepository;
     private final OrderRepositoryPort orderRepository;
-    private final RegisterInventorySaleUseCase inventorySale;
+    private final RegisterInventorySaleService inventorySale;
     private final ValidateRoleAuthorizationService authorization;
 
     public DispatchShipmentService(ShipmentRepositoryPort shipmentRepository,
                                    OrderRepositoryPort orderRepository,
-                                   RegisterInventorySaleUseCase inventorySale,
+                                   RegisterInventorySaleService inventorySale,
                                    ValidateRoleAuthorizationService authorization) {
         this.shipmentRepository = shipmentRepository;
         this.orderRepository = orderRepository;
@@ -29,12 +28,11 @@ public class DispatchShipmentService implements DispatchShipmentUseCase {
         this.authorization = authorization;
     }
 
-    @Override
-    public Shipment dispatch(User actor, Command command) {
+     public Shipment dispatch(User actor, Long shipmentId, String carrier, String trackingNumber) {
         authorization.requireRole(actor, UserRole.LOGISTICS_OPERATOR);
-        Shipment shipment = shipmentRepository.findById(command.shipmentId())
+        Shipment shipment = shipmentRepository.findById(shipmentId)
                 .orElseThrow(() -> new EntityNotFoundException("Envio no encontrado."));
-        shipment.dispatch(command.carrier(), command.trackingNumber());   // valida estado y datos
+        shipment.dispatch(carrier, trackingNumber);   // valida estado y datos
 
         Order order = orderRepository.findById(shipment.getOrderId())
                 .orElseThrow(() -> new EntityNotFoundException("Pedido no encontrado."));

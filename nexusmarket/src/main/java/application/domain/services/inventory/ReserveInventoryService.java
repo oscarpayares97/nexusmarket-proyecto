@@ -4,14 +4,13 @@ import application.domain.exceptions.InsufficientStockException;
 import application.domain.models.Inventory;
 import application.domain.models.InventoryMovement;
 import application.domain.models.User;
-import application.domain.ports.in.ReserveInventoryUseCase;
 import application.domain.ports.out.InventoryRepositoryPort;
 import application.domain.valueobjects.InventoryStatus;
 import application.domain.valueobjects.MovementType;
 
 import java.util.Optional;
 
-public class ReserveInventoryService implements ReserveInventoryUseCase {
+public class ReserveInventoryService {
 
     private final InventoryRepositoryPort inventoryRepository;
 
@@ -19,12 +18,10 @@ public class ReserveInventoryService implements ReserveInventoryUseCase {
         this.inventoryRepository = inventoryRepository;
     }
 
-    @Override
     public boolean hasStock(Long productId, int quantity) {
         return findWithStock(productId, quantity).isPresent();
     }
 
-    @Override
     public Long reserve(User buyer, Long productId, int quantity) {
         Inventory inventory = findWithStock(productId, quantity)
                 .orElseThrow(() -> new InsufficientStockException(

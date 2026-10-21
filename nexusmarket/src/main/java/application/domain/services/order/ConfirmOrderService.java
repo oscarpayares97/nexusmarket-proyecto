@@ -1,5 +1,6 @@
 package application.domain.services.order;
 
+import application.domain.services.inventory.ReserveInventoryService;
 import application.domain.exceptions.EntityNotFoundException;
 import application.domain.exceptions.InsufficientStockException;
 import application.domain.exceptions.InvalidDataException;
@@ -9,26 +10,24 @@ import application.domain.models.Order;
 import application.domain.models.OrderItem;
 import application.domain.models.Product;
 import application.domain.models.User;
-import application.domain.ports.in.ConfirmOrderUseCase;
-import application.domain.ports.in.ReserveInventoryUseCase;
 import application.domain.ports.out.BuyerRepositoryPort;
 import application.domain.ports.out.OrderRepositoryPort;
 import application.domain.ports.out.ProductRepositoryPort;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
 import application.domain.valueobjects.UserRole;
 
-public class ConfirmOrderService implements ConfirmOrderUseCase {
+public class ConfirmOrderService {
 
     private final OrderRepositoryPort orderRepository;
     private final BuyerRepositoryPort buyerRepository;
     private final ProductRepositoryPort productRepository;
-    private final ReserveInventoryUseCase reserveInventory;
+    private final ReserveInventoryService reserveInventory;
     private final ValidateRoleAuthorizationService authorization;
 
     public ConfirmOrderService(OrderRepositoryPort orderRepository,
                                BuyerRepositoryPort buyerRepository,
                                ProductRepositoryPort productRepository,
-                               ReserveInventoryUseCase reserveInventory,
+                               ReserveInventoryService reserveInventory,
                                ValidateRoleAuthorizationService authorization) {
         this.orderRepository = orderRepository;
         this.buyerRepository = buyerRepository;
@@ -37,7 +36,6 @@ public class ConfirmOrderService implements ConfirmOrderUseCase {
         this.authorization = authorization;
     }
 
-    @Override
     public Order confirm(User actor, String deliveryAddress) {
         authorization.requireRole(actor, UserRole.BUYER);
         Buyer buyer = buyerRepository.findByUserId(actor.getId())

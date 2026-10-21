@@ -8,7 +8,6 @@ import application.domain.models.OrderItem;
 import application.domain.models.ReturnItem;
 import application.domain.models.ReturnRequest;
 import application.domain.models.User;
-import application.domain.ports.in.RequestReturnUseCase;
 import application.domain.ports.out.OrderRepositoryPort;
 import application.domain.ports.out.ReturnRepositoryPort;
 import application.domain.services.authorization.ValidateOwnershipService;
@@ -16,13 +15,13 @@ import application.domain.services.authorization.ValidateRoleAuthorizationServic
 import application.domain.valueobjects.OrderStatus;
 import application.domain.valueobjects.ReturnStatus;
 import application.domain.valueobjects.UserRole;
-
+import application.domain.ports.in.BuyerPort.RequestReturnCommand;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class RequestReturnService implements RequestReturnUseCase {
+public class RequestReturnService {
 
     private final OrderRepositoryPort orderRepository;
     private final ReturnRepositoryPort returnRepository;
@@ -39,8 +38,7 @@ public class RequestReturnService implements RequestReturnUseCase {
         this.ownership = ownership;
     }
 
-    @Override
-    public ReturnRequest request(User actor, Command command) {
+    public ReturnRequest request(User actor, RequestReturnCommand command) {
         authorization.requireRole(actor, UserRole.BUYER);
         Order order = orderRepository.findById(command.orderId())
                 .orElseThrow(() -> new EntityNotFoundException("Pedido no encontrado."));

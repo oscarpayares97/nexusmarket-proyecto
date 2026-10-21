@@ -5,13 +5,13 @@ import application.domain.exceptions.InvalidDataException;
 import application.domain.models.Buyer;
 import application.domain.models.Guard;
 import application.domain.models.User;
-import application.domain.ports.in.RegisterBuyerUseCase;
 import application.domain.ports.out.BuyerRepositoryPort;
 import application.domain.ports.out.PasswordServicePort;
 import application.domain.ports.out.UserRepositoryPort;
 import application.domain.valueobjects.UserRole;
+import application.domain.ports.in.PublicAccessPort.RegisterBuyerCommand;
 
-public class RegisterBuyerService implements RegisterBuyerUseCase {
+public class RegisterBuyerService {
 
     private static final int MIN_PASSWORD_LENGTH = 8;
 
@@ -27,8 +27,7 @@ public class RegisterBuyerService implements RegisterBuyerUseCase {
         this.passwordService = passwordService;
     }
 
-    @Override
-    public Buyer register(Command command) {
+      public Buyer register(RegisterBuyerCommand command) {
         //  Validar todo antes de guardar
         Guard.requireText(command.primaryAddress(), "La primera direccion");
         if (command.rawPassword() == null || command.rawPassword().length() < MIN_PASSWORD_LENGTH) {

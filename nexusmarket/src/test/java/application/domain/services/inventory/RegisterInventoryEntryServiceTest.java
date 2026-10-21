@@ -7,7 +7,6 @@ import application.domain.models.InventoryMovement;
 import application.domain.models.Product;
 import application.domain.models.User;
 import application.domain.models.Warehouse;
-import application.domain.ports.in.RegisterInventoryEntryUseCase.Command;
 import application.domain.ports.out.InventoryRepositoryPort;
 import application.domain.ports.out.ProductRepositoryPort;
 import application.domain.ports.out.WarehouseRepositoryPort;
@@ -58,19 +57,19 @@ class RegisterInventoryEntryServiceTest {
 
     @Test
     void aSellerRegistersAnEntryInItsOwnWarehouse() {
-        Inventory inventory = service.register(marta, new Command(5L, 7L, 20));
+        Inventory inventory = service.register(marta, 5L, 7L, 20);
         assertEquals(20, inventory.getAvailable());
         verify(inventories).saveMovement(any(InventoryMovement.class));
     }
 
     @Test
     void anotherSellerCannotOperateTheInventory() {
-        assertThrows(UnauthorizedOperationException.class, () -> service.register(pedro, new Command(5L, 7L, 20)));
+        assertThrows(UnauthorizedOperationException.class, () -> service.register(pedro, 5L, 7L, 20));
         verify(inventories, never()).save(any(Inventory.class));
     }
 
     @Test
     void digitalProductsDoNotManageInventory() {
-        assertThrows(InvalidDataException.class, () -> service.register(marta, new Command(6L, 7L, 5)));
+        assertThrows(InvalidDataException.class, () -> service.register(marta, 6L, 7L, 5));
     }
 }

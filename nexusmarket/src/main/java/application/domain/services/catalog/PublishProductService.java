@@ -3,13 +3,12 @@ package application.domain.services.catalog;
 import application.domain.exceptions.EntityNotFoundException;
 import application.domain.models.Product;
 import application.domain.models.User;
-import application.domain.ports.in.PublishProductUseCase;
 import application.domain.ports.out.ProductRepositoryPort;
 import application.domain.services.authorization.ValidateOwnershipService;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
 import application.domain.valueobjects.UserRole;
 
-public class PublishProductService implements PublishProductUseCase {
+public class PublishProductService {
 
     private final ProductRepositoryPort productRepository;
     private final ValidateRoleAuthorizationService authorization;
@@ -23,7 +22,6 @@ public class PublishProductService implements PublishProductUseCase {
         this.ownership = ownership;
     }
 
-    @Override
     public Product publish(User actor, Long productId) {
         authorization.requireRole(actor, UserRole.SELLER);
         Product product = productRepository.findById(productId)

@@ -3,12 +3,11 @@ package application.domain.services.returns;
 import application.domain.exceptions.EntityNotFoundException;
 import application.domain.models.Refund;
 import application.domain.models.User;
-import application.domain.ports.in.ProcessRefundUseCase;
 import application.domain.ports.out.RefundRepositoryPort;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
 import application.domain.valueobjects.UserRole;
 
-public class ProcessRefundService implements ProcessRefundUseCase {
+public class ProcessRefundService {
 
     private final RefundRepositoryPort refundRepository;
     private final ValidateRoleAuthorizationService authorization;
@@ -19,7 +18,6 @@ public class ProcessRefundService implements ProcessRefundUseCase {
         this.authorization = authorization;
     }
 
-    @Override
     public Refund process(User actor, Long refundId) {
         authorization.requireRole(actor, UserRole.ADMINISTRATOR);
         Refund refund = refundRepository.findById(refundId)

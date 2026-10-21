@@ -1,12 +1,11 @@
 package application.domain.services.catalog;
 
 import application.domain.models.Product;
-import application.domain.ports.in.ConsultPublishedProductsUseCase;
 import application.domain.ports.out.ProductRepositoryPort;
 
 import java.util.List;
 
-public class ConsultPublishedProductsService implements ConsultPublishedProductsUseCase {
+public class ConsultPublishedProductsService {
 
     private final ProductRepositoryPort productRepository;
 
@@ -14,7 +13,6 @@ public class ConsultPublishedProductsService implements ConsultPublishedProducts
         this.productRepository = productRepository;
     }
 
-    @Override
     public List<Product> consult() {
         return productRepository.findPublished();
     }

@@ -5,7 +5,7 @@ import application.domain.exceptions.UnauthorizedOperationException;
 import application.domain.models.Seller;
 import application.domain.models.User;
 import application.domain.models.Warehouse;
-import application.domain.ports.in.RegisterSellerUseCase.Command;
+import application.domain.ports.in.AdministratorPort.RegisterSellerCommand;
 import application.domain.ports.out.PasswordServicePort;
 import application.domain.ports.out.SellerRepositoryPort;
 import application.domain.ports.out.UserRepositoryPort;
@@ -54,27 +54,27 @@ class RegisterSellerServiceTest {
                 new ValidateRoleAuthorizationService());
     }
 
-    private Command command() {
-        return new Command("3001", "Pedro Mora", "pedro@mail.com", "secret123",
+    private RegisterSellerCommand RegisterSellerCommand() {
+        return new RegisterSellerCommand("3001", "Pedro Mora", "pedro@mail.com", "secret123",
                 "Pedro Store", "Main warehouse", "Industrial zone");
     }
 
     @Test
     void registersTheSellerWithItsFirstWarehouse() {
-        Seller registered = service.register(admin, command());
+        Seller registered = service.register(admin, RegisterSellerCommand());
         assertEquals(10L, registered.getUserId());
         verify(warehouses).save(any(Warehouse.class));
     }
 
     @Test
     void onlyAdministratorsRegisterSellers() {
-        assertThrows(UnauthorizedOperationException.class, () -> service.register(seller, command()));
+        assertThrows(UnauthorizedOperationException.class, () -> service.register(seller, RegisterSellerCommand()));
         verify(users, never()).save(any(User.class));
     }
 
     @Test
     void rejectsADuplicatedDocument() {
         when(users.existsByDocument("3001")).thenReturn(true);
-        assertThrows(DuplicateEntityException.class, () -> service.register(admin, command()));
+        assertThrows(DuplicateEntityException.class, () -> service.register(admin, RegisterSellerCommand()));
     }
 }

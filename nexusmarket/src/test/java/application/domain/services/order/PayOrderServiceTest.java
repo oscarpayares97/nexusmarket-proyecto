@@ -1,11 +1,11 @@
 package application.domain.services.order;
 
+import application.domain.services.billing.IssueInvoiceService;
 import application.domain.exceptions.InvalidDataException;
 import application.domain.exceptions.UnauthorizedOperationException;
 import application.domain.models.Order;
 import application.domain.models.Product;
 import application.domain.models.User;
-import application.domain.ports.in.IssueInvoiceUseCase;
 import application.domain.ports.out.OrderRepositoryPort;
 import application.domain.services.authorization.ValidateOwnershipService;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 
 class PayOrderServiceTest {
 
-    private IssueInvoiceUseCase issueInvoice;
+    private IssueInvoiceService issueInvoice;
     private PayOrderService service;
     private Order physicalOrder;
     private Order digitalOrder;
@@ -39,7 +39,7 @@ class PayOrderServiceTest {
     @BeforeEach
     void setUp() {
         OrderRepositoryPort orders = mock(OrderRepositoryPort.class);
-        issueInvoice = mock(IssueInvoiceUseCase.class);
+        issueInvoice = mock(IssueInvoiceService.class);
 
         Product shirt = new Product(1L, 2L, "T-shirt", ProductType.PHYSICAL, Money.of("35000"));
         Product ebook = new Product(2L, 2L, "Ebook", ProductType.DIGITAL, Money.of("50000"));

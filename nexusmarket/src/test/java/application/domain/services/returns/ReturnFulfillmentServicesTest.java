@@ -1,5 +1,6 @@
 package application.domain.services.returns;
 
+import application.domain.services.inventory.RegisterInventoryReturnService;
 import application.domain.exceptions.InvalidStatusTransitionException;
 import application.domain.exceptions.UnauthorizedOperationException;
 import application.domain.models.OrderItem;
@@ -7,7 +8,6 @@ import application.domain.models.Refund;
 import application.domain.models.ReturnItem;
 import application.domain.models.ReturnRequest;
 import application.domain.models.User;
-import application.domain.ports.in.RegisterInventoryReturnUseCase;
 import application.domain.ports.out.RefundRepositoryPort;
 import application.domain.ports.out.ReturnRepositoryPort;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
@@ -36,7 +36,7 @@ class ReturnFulfillmentServicesTest {
 
     private ReturnRepositoryPort returns;
     private RefundRepositoryPort refunds;
-    private RegisterInventoryReturnUseCase inventoryReturn;
+    private RegisterInventoryReturnService inventoryReturn;
     private ReturnRequest request;
     private final ValidateRoleAuthorizationService authorization = new ValidateRoleAuthorizationService();
 
@@ -48,7 +48,7 @@ class ReturnFulfillmentServicesTest {
     void setUp() {
         returns = mock(ReturnRepositoryPort.class);
         refunds = mock(RefundRepositoryPort.class);
-        inventoryReturn = mock(RegisterInventoryReturnUseCase.class);
+        inventoryReturn = mock(RegisterInventoryReturnService.class);
 
         OrderItem line = new OrderItem(1L, "T-shirt", ProductType.PHYSICAL, Money.of("35000"), 3, 7L);
         request = new ReturnRequest(1L, 10L, 5L, List.of(ReturnItem.from(line, 1)), "Wrong size");

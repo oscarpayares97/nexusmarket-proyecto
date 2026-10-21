@@ -3,7 +3,7 @@ package application.domain.services.catalog;
 import application.domain.exceptions.UnauthorizedOperationException;
 import application.domain.models.Product;
 import application.domain.models.User;
-import application.domain.ports.in.RegisterProductUseCase.Command;
+import application.domain.ports.in.SellerPort.RegisterProductCommand;
 import application.domain.ports.out.ProductRepositoryPort;
 import application.domain.services.authorization.ValidateOwnershipService;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
@@ -54,7 +54,7 @@ class CatalogServicesTest {
     @Test
     void registeringAssignsTheActorAsTheSeller() {
         Product product = register.register(marta,
-                new Command("Hat", ProductType.PHYSICAL, new BigDecimal("20000")));
+                new RegisterProductCommand("Hat", ProductType.PHYSICAL, new BigDecimal("20000")));
         assertEquals(2L, product.getSellerId());
         assertEquals(ProductStatus.SUSPENDED, product.getStatus());
     }
@@ -62,7 +62,7 @@ class CatalogServicesTest {
     @Test
     void aBuyerCannotRegisterProducts() {
         assertThrows(UnauthorizedOperationException.class, () -> register.register(luis,
-                new Command("Hat", ProductType.PHYSICAL, new BigDecimal("20000"))));
+                new RegisterProductCommand("Hat", ProductType.PHYSICAL, new BigDecimal("20000"))));
     }
 
     @Test

@@ -1,26 +1,25 @@
 package application.domain.services.order;
 
+import application.domain.services.billing.IssueInvoiceService;
 import application.domain.exceptions.EntityNotFoundException;
 import application.domain.exceptions.InvalidDataException;
 import application.domain.models.Order;
 import application.domain.models.User;
-import application.domain.ports.in.IssueInvoiceUseCase;
-import application.domain.ports.in.PayOrderUseCase;
 import application.domain.ports.out.OrderRepositoryPort;
 import application.domain.services.authorization.ValidateOwnershipService;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
 import application.domain.valueobjects.OrderStatus;
 import application.domain.valueobjects.UserRole;
 
-public class PayOrderService implements PayOrderUseCase {
+public class PayOrderService {
 
     private final OrderRepositoryPort orderRepository;
-    private final IssueInvoiceUseCase issueInvoice;
+    private final IssueInvoiceService issueInvoice;
     private final ValidateRoleAuthorizationService authorization;
     private final ValidateOwnershipService ownership;
 
     public PayOrderService(OrderRepositoryPort orderRepository,
-                           IssueInvoiceUseCase issueInvoice,
+                           IssueInvoiceService issueInvoice,
                            ValidateRoleAuthorizationService authorization,
                            ValidateOwnershipService ownership) {
         this.orderRepository = orderRepository;
@@ -29,7 +28,6 @@ public class PayOrderService implements PayOrderUseCase {
         this.ownership = ownership;
     }
 
-    @Override
     public Order pay(User actor, Long orderId, boolean paymentApproved) {
         authorization.requireRole(actor, UserRole.BUYER);
         Order order = orderRepository.findById(orderId)

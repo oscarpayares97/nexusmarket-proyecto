@@ -6,7 +6,6 @@ import application.domain.models.Guard;
 import application.domain.models.Seller;
 import application.domain.models.User;
 import application.domain.models.Warehouse;
-import application.domain.ports.in.RegisterSellerUseCase;
 import application.domain.ports.out.PasswordServicePort;
 import application.domain.ports.out.SellerRepositoryPort;
 import application.domain.ports.out.UserRepositoryPort;
@@ -14,8 +13,8 @@ import application.domain.ports.out.WarehouseRepositoryPort;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
 import application.domain.valueobjects.UserRole;
 import application.domain.valueobjects.WarehouseType;
-
-public class RegisterSellerService implements RegisterSellerUseCase {
+import application.domain.ports.in.AdministratorPort.RegisterSellerCommand;
+public class RegisterSellerService {
 
     private static final int MIN_PASSWORD_LENGTH = 8;
 
@@ -37,8 +36,7 @@ public class RegisterSellerService implements RegisterSellerUseCase {
         this.authorization = authorization;
     }
 
-    @Override
-    public Seller register(User actor, Command command) {
+    public Seller register(User actor, RegisterSellerCommand command) {
         authorization.requireRole(actor, UserRole.ADMINISTRATOR);
 
         // Validar todo antes de guardar nada

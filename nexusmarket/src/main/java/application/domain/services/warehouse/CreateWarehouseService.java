@@ -3,14 +3,13 @@ package application.domain.services.warehouse;
 import application.domain.exceptions.EntityNotFoundException;
 import application.domain.models.User;
 import application.domain.models.Warehouse;
-import application.domain.ports.in.CreateWarehouseUseCase;
 import application.domain.ports.out.SellerRepositoryPort;
 import application.domain.ports.out.WarehouseRepositoryPort;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
 import application.domain.valueobjects.UserRole;
 import application.domain.valueobjects.WarehouseType;
-
-public class CreateWarehouseService implements CreateWarehouseUseCase {
+import application.domain.ports.in.AdministratorPort.CreateWarehouseCommand;
+public class CreateWarehouseService {
 
     private final WarehouseRepositoryPort warehouseRepository;
     private final SellerRepositoryPort sellerRepository;
@@ -24,8 +23,7 @@ public class CreateWarehouseService implements CreateWarehouseUseCase {
         this.authorization = authorization;
     }
 
-    @Override
-    public Warehouse create(User actor, Command command) {
+    public Warehouse create(User actor, CreateWarehouseCommand command) {
         authorization.requireRole(actor, UserRole.ADMINISTRATOR);
         WarehouseType type = WarehouseType.MARKETPLACE;
         if (command.sellerId() != null) {

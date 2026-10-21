@@ -1,27 +1,26 @@
 package application.domain.services.returns;
 
+import application.domain.services.inventory.RegisterInventoryReturnService;
 import application.domain.exceptions.EntityNotFoundException;
 import application.domain.models.Refund;
 import application.domain.models.ReturnItem;
 import application.domain.models.ReturnRequest;
 import application.domain.models.User;
-import application.domain.ports.in.ReceiveReturnUseCase;
-import application.domain.ports.in.RegisterInventoryReturnUseCase;
 import application.domain.ports.out.RefundRepositoryPort;
 import application.domain.ports.out.ReturnRepositoryPort;
 import application.domain.services.authorization.ValidateRoleAuthorizationService;
 import application.domain.valueobjects.UserRole;
 
-public class ReceiveReturnService implements ReceiveReturnUseCase {
+public class ReceiveReturnService {
 
     private final ReturnRepositoryPort returnRepository;
     private final RefundRepositoryPort refundRepository;
-    private final RegisterInventoryReturnUseCase inventoryReturn;
+    private final RegisterInventoryReturnService inventoryReturn;
     private final ValidateRoleAuthorizationService authorization;
 
     public ReceiveReturnService(ReturnRepositoryPort returnRepository,
                                 RefundRepositoryPort refundRepository,
-                                RegisterInventoryReturnUseCase inventoryReturn,
+                                RegisterInventoryReturnService inventoryReturn,
                                 ValidateRoleAuthorizationService authorization) {
         this.returnRepository = returnRepository;
         this.refundRepository = refundRepository;
@@ -29,7 +28,6 @@ public class ReceiveReturnService implements ReceiveReturnUseCase {
         this.authorization = authorization;
     }
 
-    @Override
     public ReturnRequest receive(User actor, Long returnId) {
         authorization.requireRole(actor, UserRole.LOGISTICS_OPERATOR);
         ReturnRequest returnRequest = returnRepository.findById(returnId)
