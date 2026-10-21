@@ -10,7 +10,7 @@ public class User {
     private final String document;
     private final String fullName;
     private final String email;
-    private final String passwordHash;
+    private String passwordHash;
     private final UserRole role;          // un único rol por usuario (RG-02)
     private UserStatus status;
 
@@ -48,6 +48,10 @@ public class User {
             throw new InvalidDataException("El usuario ya tiene un ID.");
         }
         this.id = id;
+    }
+
+    public void changePasswordHash(String newPasswordHash) {
+        this.passwordHash = Guard.requireText(newPasswordHash, "La contraseña");
     }
 
     public void block() { this.status = UserStatus.BLOCKED; }

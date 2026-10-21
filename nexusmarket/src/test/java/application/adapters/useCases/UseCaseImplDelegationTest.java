@@ -33,7 +33,12 @@ import application.domain.valueobjects.Money;
 import application.domain.valueobjects.ProductType;
 import application.domain.valueobjects.UserRole;
 import org.junit.jupiter.api.Test;
-
+import application.domain.models.AuthenticationResult;
+import application.domain.services.user.ChangeUserStatusService;
+import application.domain.services.user.ConsultUserService;
+import application.domain.services.user.LoginService;
+import application.domain.services.user.RegisterInternalUserService;
+import application.domain.valueobjects.UserStatus;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -50,8 +55,8 @@ class UseCaseImplDelegationTest {
     @Test
     void publicAccessDelegatesTheBuyerRegistration() {
         RegisterBuyerService register = mock(RegisterBuyerService.class);
-        PublicAccessUseCaseImpl impl =
-                new PublicAccessUseCaseImpl(register, mock(ConsultPublishedProductsService.class));
+                PublicAccessUseCaseImpl impl = new PublicAccessUseCaseImpl(register,
+                mock(LoginService.class), mock(ConsultPublishedProductsService.class));
         RegisterBuyerCommand command =
                 new RegisterBuyerCommand("1001", "Ana Gomez", "ana@mail.com", "secret123", "Street 1");
         Buyer buyer = new Buyer(1L, "Street 1");
@@ -100,11 +105,35 @@ class UseCaseImplDelegationTest {
         ApproveReturnService approve = mock(ApproveReturnService.class);
         AdministratorUseCaseImpl impl = new AdministratorUseCaseImpl(mock(RegisterSellerService.class),
                 mock(CreateWarehouseService.class), approve, mock(RejectReturnService.class),
-                mock(ProcessRefundService.class));
+                                mock(ProcessRefundService.class), mock(RegisterInternalUserService.class),
+                mock(ChangeUserStatusService.class), 
+                mock(ConsultUserService.class));
         OrderItem line = new OrderItem(1L, "T-shirt", ProductType.PHYSICAL, Money.of("35000"), 3, 7L);
         ReturnRequest request = new ReturnRequest(1L, 10L, 5L, List.of(ReturnItem.from(line, 1)), "Wrong size");
         when(approve.approve(admin, 1L)).thenReturn(request);
 
         assertSame(request, impl.approveReturn(admin, 1L));
     }
+      @Test
+    void publicAccessDelegatesTheLogin() {
+        LoginService login = mock(LoginService.class);
+        PublicAccessUseCaseImpl impl = new PublicAccessUseCaseImpl(mock(RegisterBuyerService.class),
+                login, mock(ConsultPublishedProductsService.class));
+        AuthenticationResult result = new AuthenticationResult("token-123", luis);
+        when(login.login("luis@mail.com", "secret123")).thenReturn(result);
+
+        assertSame(result, impl.login("luis@mail.com", "secret123"));
+    }
+
+    @Test
+    void administratorDelegatesTheUserStatusChange() {
+        ChangeUserStatusService changeStatus = mock(ChangeUserStatusService.class);
+        AdministratorUseCaseImpl impl = new AdministratorUseCaseImpl(mock(RegisterSellerService.class),
+                mock(CreateWarehouseService.class), mock(ApproveReturnService.class),
+                mock(RejectReturnService.class), mock(ProcessRefundService.class),
+                mock(RegisterInternalUserService.class), changeStatus, mock(ConsultUserService.class));
+        when(changeStatus.change(admin, 5L, UserStatus.BLOCKED)).thenReturn(luis);
+
+        assertSame(luis, impl.changeUserStatus(admin, 5L, UserStatus.BLOCKED));
+    }  
 }

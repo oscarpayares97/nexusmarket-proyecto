@@ -5,12 +5,22 @@ import application.domain.models.ReturnRequest;
 import application.domain.models.Seller;
 import application.domain.models.User;
 import application.domain.models.Warehouse;
+import application.domain.valueobjects.UserRole;
+import application.domain.valueobjects.UserStatus;
+
+import java.util.List;
 
 public interface AdministratorPort {
 
     Seller registerSeller(User actor, RegisterSellerCommand command);
 
     Warehouse createWarehouse(User actor, CreateWarehouseCommand command);
+
+    User registerInternalUser(User actor, RegisterInternalUserCommand command);
+
+    User changeUserStatus(User actor, Long userId, UserStatus newStatus);
+
+    List<User> consultUsers(User actor);
 
     ReturnRequest approveReturn(User actor, Long returnId);
 
@@ -23,5 +33,9 @@ public interface AdministratorPort {
     }
 
     record CreateWarehouseCommand(String name, String location, Long sellerId) {
+    }
+
+    record RegisterInternalUserCommand(String document, String fullName, String email,
+                                       String rawPassword, UserRole role) {
     }
 }
