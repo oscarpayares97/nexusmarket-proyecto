@@ -181,9 +181,10 @@ $pa.Add("")
 $pa.Add("## Tables (JPA entities)")
 $pa.Add("")
 $entityCount = 0
-$entityDir = Join-Path $adapters "persistence\jpa\entities"
-foreach ($file in (Get-ChildItem $entityDir -Filter *.java | Sort-Object Name)) {
+$persistenceRoot = Join-Path $adapters "persistence"
+foreach ($file in (Get-ChildItem $persistenceRoot -Recurse -Filter *.java | Sort-Object Name)) {
     $text = Read-File $file.FullName
+    if ($text -notmatch '@Entity|@Embeddable') { continue }
     $isEntity = $text -match '@Entity'
     $table = "(embedded in its parent table)"
     if ($text -match '@Table\(\s*name\s*=\s*"(\w+)"') { $table = $Matches[1] }
@@ -205,8 +206,7 @@ $pa.Add("## Spring Data repositories")
 $pa.Add("")
 $pa.Add("| Repository | Entity |")
 $pa.Add("|---|---|")
-$repoDir = Join-Path $adapters "persistence\jpa\repositories"
-foreach ($file in (Get-ChildItem $repoDir -Filter *.java | Sort-Object Name)) {
+foreach ($file in (Get-ChildItem $persistenceRoot -Recurse -Filter *.java | Sort-Object Name)) {
     $text = Read-File $file.FullName
     if ($text -match 'interface\s+(\w+)\s+extends\s+JpaRepository<(\w+)') {
         $pa.Add("| " + (Code $Matches[1]) + " | " + (Code $Matches[2]) + " |")
