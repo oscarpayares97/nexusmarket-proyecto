@@ -72,11 +72,12 @@ public class SecurityConfig {
         };
     }
 
-    @Bean
+      @Bean
     public CorsConfigurationSource corsConfigurationSource(
-            @Value("${FRONTEND_ORIGIN:http://localhost:5173}") String frontendOrigin) {
+            @Value("${FRONTEND_ORIGIN:http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173}")
+            String[] frontendOrigins) {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(frontendOrigin));
+        configuration.setAllowedOrigins(List.of(frontendOrigins));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Request-Id"));
         configuration.setExposedHeaders(List.of("X-Request-Id"));

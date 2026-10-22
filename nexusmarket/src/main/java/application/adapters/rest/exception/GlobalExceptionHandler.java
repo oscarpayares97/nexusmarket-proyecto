@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
 
 /** Traduce las excepciones del dominio a respuestas HTTP. Spring elige el handler más específico. */
 @RestControllerAdvice
@@ -82,6 +85,20 @@ public class GlobalExceptionHandler {
             NoResourceFoundException ex, HttpServletRequest request) {
         return respond(HttpStatus.NOT_FOUND,
                 "Resource not found: " + request.getMethod() + " " + request.getRequestURI(), request, ex);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodNotSupported(
+            HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+        return respond(HttpStatus.METHOD_NOT_ALLOWED,
+                "HTTP method " + ex.getMethod() + " is not supported for this route.", request, ex);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+        return respond(HttpStatus.BAD_REQUEST,
+                "Invalid value for parameter '" + ex.getName() + "'.", request, ex);
     }
 
     @ExceptionHandler(Exception.class)
