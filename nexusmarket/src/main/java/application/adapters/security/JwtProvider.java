@@ -41,8 +41,8 @@ public class JwtProvider implements JwtServicePort {
                 .claim("email", user.getEmail().value())
                 .claim("Nombre completo", user.getFullName())
                 .claim("documento", user.getDocument().value())
-                .claim("rol", user.getRole().name())
-                .claim("Estado", user.getStatus().name())
+                .claim("role", user.getRole().name())
+                .claim("status", user.getStatus().name())
                 .signWith(key)
                 .compact();
     }

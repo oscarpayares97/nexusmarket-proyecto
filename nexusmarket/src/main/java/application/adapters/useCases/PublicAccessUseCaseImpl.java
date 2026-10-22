@@ -9,7 +9,9 @@ import application.domain.services.catalog.ConsultPublishedProductsService;
 import application.domain.services.user.LoginService;
 
 import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 public class PublicAccessUseCaseImpl implements PublicAccessPort {
 
     private final RegisterBuyerService registerBuyerService;

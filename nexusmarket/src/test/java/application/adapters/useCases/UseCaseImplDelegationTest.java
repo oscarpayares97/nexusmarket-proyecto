@@ -1,139 +1,271 @@
 package application.adapters.useCases;
 
-import application.domain.models.Buyer;
-import application.domain.models.Order;
-import application.domain.models.OrderItem;
-import application.domain.models.Product;
-import application.domain.models.ReturnItem;
-import application.domain.models.ReturnRequest;
-import application.domain.models.Shipment;
-import application.domain.models.User;
-import application.domain.ports.in.PublicAccessPort.RegisterBuyerCommand;
-import application.domain.services.buyer.RegisterBuyerService;
-import application.domain.services.catalog.ConsultPublishedProductsService;
-import application.domain.services.catalog.PublishProductService;
-import application.domain.services.catalog.RegisterProductService;
-import application.domain.services.inventory.RegisterInventoryEntryService;
-import application.domain.services.order.AddItemToCartService;
-import application.domain.services.order.ConfirmOrderService;
-import application.domain.services.order.PayOrderService;
-import application.domain.services.returns.ApproveReturnService;
-import application.domain.services.returns.ProcessRefundService;
-import application.domain.services.returns.ReceiveReturnService;
-import application.domain.services.returns.RejectReturnService;
-import application.domain.services.returns.RequestReturnService;
-import application.domain.services.seller.RegisterSellerService;
-import application.domain.services.shipping.ConfirmDeliveryService;
-import application.domain.services.shipping.DispatchShipmentService;
-import application.domain.services.shipping.PackShipmentService;
-import application.domain.services.shipping.RegisterShipmentInTransitService;
-import application.domain.services.shipping.StartShipmentPreparationService;
-import application.domain.services.warehouse.CreateWarehouseService;
-import application.domain.valueobjects.Money;
-import application.domain.valueobjects.ProductType;
-import application.domain.valueobjects.UserRole;
-import org.junit.jupiter.api.Test;
-import application.domain.models.AuthenticationResult;
-import application.domain.services.user.ChangeUserStatusService;
-import application.domain.services.user.ConsultUserService;
-import application.domain.services.user.LoginService;
-import application.domain.services.user.RegisterInternalUserService;
-import application.domain.valueobjects.UserStatus;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import application.domain.models.Buyer;
+import application.domain.models.Inventory;
+import application.domain.models.Order;
+import application.domain.models.Product;
+import application.domain.models.Refund;
+import application.domain.models.SalesReport;
+import application.domain.models.Shipment;
+import application.domain.models.User;
+import application.domain.ports.in.PublicAccessPort;
+import application.domain.ports.in.SellerPort;
+import application.domain.services.billing.ConsultInvoicesService;
+import application.domain.services.buyer.ChangeBuyerCommercialStatusService;
+import application.domain.services.buyer.RegisterBuyerService;
+import application.domain.services.catalog.ConsultPublishedProductsService;
+import application.domain.services.catalog.RegisterProductService;
+import application.domain.services.catalog.SuspendProductService;
+import application.domain.services.inventory.AdjustInventoryService;
+import application.domain.services.inventory.ConsultInventoryService;
+import application.domain.services.order.AddItemToCartService;
+import application.domain.services.order.ConsultMyOrdersService;
+import application.domain.services.order.ConsultOrdersService;
+import application.domain.services.order.RemoveItemFromCartService;
+import application.domain.services.report.GenerateSalesReportService;
+import application.domain.services.returns.ConsultRefundsService;
+import application.domain.services.shipping.ConsultShipmentsService;
+import application.domain.services.shipping.DispatchShipmentService;
+import application.domain.services.user.ChangeUserPasswordService;
+import application.domain.services.user.ConsultUserService;
+import application.domain.services.user.LoginService;
+import application.domain.valueobjects.CommercialStatus;
+import application.domain.valueobjects.ProductType;
+import application.domain.valueobjects.UserRole;
+import java.math.BigDecimal;
+import java.util.List;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+/** Cada caso de uso solo delega en un servicio del dominio: aquí se comprueba esa delegación. */
+@ExtendWith(MockitoExtension.class)
 class UseCaseImplDelegationTest {
 
-    private final User admin = new User(1L, "1001", "Ana Admin", "admin@mail.com", "hash", UserRole.ADMINISTRATOR);
-    private final User marta = new User(2L, "2001", "Marta Ruiz", "marta@mail.com", "hash", UserRole.SELLER);
-    private final User oscar = new User(3L, "3001", "Oscar Vega", "oscar@mail.com", "hash", UserRole.LOGISTICS_OPERATOR);
-    private final User luis = new User(5L, "1002", "Luis Perez", "luis@mail.com", "hash", UserRole.BUYER);
-
-    @Test
-    void publicAccessDelegatesTheBuyerRegistration() {
-        RegisterBuyerService register = mock(RegisterBuyerService.class);
-                PublicAccessUseCaseImpl impl = new PublicAccessUseCaseImpl(register,
-                mock(LoginService.class), mock(ConsultPublishedProductsService.class));
-        RegisterBuyerCommand command =
-                new RegisterBuyerCommand("1001", "Ana Gomez", "ana@mail.com", "secret123", "Street 1");
-        Buyer buyer = new Buyer(1L, "Street 1");
-        when(register.register(command)).thenReturn(buyer);
-
-        assertSame(buyer, impl.registerBuyer(command));
+    private static User actor() {
+        return new User(1L, "DOC-1", "Actor Test", "actor@test.com", "hash", UserRole.ADMINISTRATOR);
     }
 
-    @Test
-    void buyerDelegatesThePayment() {
-        PayOrderService pay = mock(PayOrderService.class);
-        BuyerUseCaseImpl impl = new BuyerUseCaseImpl(mock(AddItemToCartService.class),
-                mock(ConfirmOrderService.class), pay, mock(RequestReturnService.class));
-        Order order = new Order(10L, 5L);
-        when(pay.pay(luis, 10L, true)).thenReturn(order);
+    @Nested
+    class PublicAccess {
+        @Mock RegisterBuyerService registerBuyerService;
+        @Mock LoginService loginService;
+        @Mock ConsultPublishedProductsService consultPublishedProductsService;
+        @InjectMocks PublicAccessUseCaseImpl useCase;
 
-        assertSame(order, impl.payOrder(luis, 10L, true));
+        @Test
+        void registerBuyerDelegates() {
+            PublicAccessPort.RegisterBuyerCommand command =
+                    new PublicAccessPort.RegisterBuyerCommand("D1", "Ana", "ana@test.com", "Clave12345", "Calle 1");
+            Buyer buyer = mock(Buyer.class);
+            when(registerBuyerService.register(command)).thenReturn(buyer);
+
+            assertSame(buyer, useCase.registerBuyer(command));
+        }
+
+        @Test
+        void consultPublishedProductsDelegates() {
+            List<Product> products = List.of(mock(Product.class));
+            when(consultPublishedProductsService.consult()).thenReturn(products);
+
+            assertSame(products, useCase.consultPublishedProducts());
+        }
     }
 
-    @Test
-    void sellerDelegatesThePublication() {
-        PublishProductService publish = mock(PublishProductService.class);
-        SellerUseCaseImpl impl = new SellerUseCaseImpl(mock(RegisterProductService.class), publish,
-                mock(RegisterInventoryEntryService.class));
-        Product product = new Product(1L, 2L, "T-shirt", ProductType.PHYSICAL, Money.of("35000"));
-        when(publish.publish(marta, 1L)).thenReturn(product);
+    @Nested
+    class BuyerRole {
+        @Mock AddItemToCartService addItemToCartService;
+        @Mock RemoveItemFromCartService removeItemFromCartService;
+        @Mock ConsultMyOrdersService consultMyOrdersService;
+        @Mock ChangeUserPasswordService changeUserPasswordService;
+        @InjectMocks BuyerUseCaseImpl useCase;
 
-        assertSame(product, impl.publishProduct(marta, 1L));
+        @Test
+        void addItemToCartDelegates() {
+            User actor = actor();
+            Order order = mock(Order.class);
+            when(addItemToCartService.add(actor, 5L, 2)).thenReturn(order);
+
+            assertSame(order, useCase.addItemToCart(actor, 5L, 2));
+        }
+
+        @Test
+        void removeItemFromCartDelegates() {
+            User actor = actor();
+            Order order = mock(Order.class);
+            when(removeItemFromCartService.remove(actor, 5L)).thenReturn(order);
+
+            assertSame(order, useCase.removeItemFromCart(actor, 5L));
+        }
+
+        @Test
+        void consultMyOrdersDelegates() {
+            User actor = actor();
+            List<Order> orders = List.of(mock(Order.class));
+            when(consultMyOrdersService.consultMyOrders(actor)).thenReturn(orders);
+
+            assertSame(orders, useCase.consultMyOrders(actor));
+        }
+
+        @Test
+        void changePasswordDelegates() {
+            User actor = actor();
+
+            useCase.changePassword(actor, "old", "new");
+
+            verify(changeUserPasswordService).change(actor, "old", "new");
+        }
     }
 
-    @Test
-    void operatorDelegatesTheDispatch() {
-        DispatchShipmentService dispatch = mock(DispatchShipmentService.class);
-        LogisticsOperatorUseCaseImpl impl = new LogisticsOperatorUseCaseImpl(
-                mock(RegisterInventoryEntryService.class), mock(StartShipmentPreparationService.class),
-                mock(PackShipmentService.class), dispatch, mock(RegisterShipmentInTransitService.class),
-                mock(ConfirmDeliveryService.class), mock(ReceiveReturnService.class));
-        Shipment shipment = new Shipment(20L, 10L, "Street 1");
-        when(dispatch.dispatch(oscar, 20L, "FastCarrier", "TR-1")).thenReturn(shipment);
+    @Nested
+    class SellerRole {
+        @Mock RegisterProductService registerProductService;
+        @Mock SuspendProductService suspendProductService;
+        @Mock ConsultInventoryService consultInventoryService;
+        @InjectMocks SellerUseCaseImpl useCase;
 
-        assertSame(shipment, impl.dispatchShipment(oscar, 20L, "FastCarrier", "TR-1"));
+        @Test
+        void registerProductDelegates() {
+            User actor = actor();
+            SellerPort.RegisterProductCommand command =
+                    new SellerPort.RegisterProductCommand("Mouse", ProductType.PHYSICAL, new BigDecimal("50000"));
+            Product product = mock(Product.class);
+            when(registerProductService.register(actor, command)).thenReturn(product);
+
+            assertSame(product, useCase.registerProduct(actor, command));
+        }
+
+        @Test
+        void suspendProductDelegates() {
+            User actor = actor();
+            Product product = mock(Product.class);
+            when(suspendProductService.suspend(actor, 7L)).thenReturn(product);
+
+            assertSame(product, useCase.suspendProduct(actor, 7L));
+        }
+
+        @Test
+        void consultInventoryDelegates() {
+            User actor = actor();
+            List<Inventory> inventory = List.of(mock(Inventory.class));
+            when(consultInventoryService.consultInventory(actor, 7L)).thenReturn(inventory);
+
+            assertSame(inventory, useCase.consultInventory(actor, 7L));
+        }
     }
 
-    @Test
-    void administratorDelegatesTheReturnApproval() {
-        ApproveReturnService approve = mock(ApproveReturnService.class);
-        AdministratorUseCaseImpl impl = new AdministratorUseCaseImpl(mock(RegisterSellerService.class),
-                mock(CreateWarehouseService.class), approve, mock(RejectReturnService.class),
-                                mock(ProcessRefundService.class), mock(RegisterInternalUserService.class),
-                mock(ChangeUserStatusService.class), 
-                mock(ConsultUserService.class));
-        OrderItem line = new OrderItem(1L, "T-shirt", ProductType.PHYSICAL, Money.of("35000"), 3, 7L);
-        ReturnRequest request = new ReturnRequest(1L, 10L, 5L, List.of(ReturnItem.from(line, 1)), "Wrong size");
-        when(approve.approve(admin, 1L)).thenReturn(request);
+    @Nested
+    class LogisticsRole {
+        @Mock DispatchShipmentService dispatchShipmentService;
+        @Mock ConsultShipmentsService consultShipmentsService;
+        @Mock AdjustInventoryService adjustInventoryService;
+        @InjectMocks LogisticsOperatorUseCaseImpl useCase;
 
-        assertSame(request, impl.approveReturn(admin, 1L));
+        @Test
+        void dispatchShipmentDelegates() {
+            User actor = actor();
+            Shipment shipment = mock(Shipment.class);
+            when(dispatchShipmentService.dispatch(actor, 3L, "Servientrega", "TRK-1")).thenReturn(shipment);
+
+            assertSame(shipment, useCase.dispatchShipment(actor, 3L, "Servientrega", "TRK-1"));
+        }
+
+        @Test
+        void consultShipmentsDelegates() {
+            User actor = actor();
+            List<Shipment> shipments = List.of(mock(Shipment.class));
+            when(consultShipmentsService.consultShipments(actor)).thenReturn(shipments);
+
+            assertSame(shipments, useCase.consultShipments(actor));
+        }
+
+        @Test
+        void adjustInventoryDelegates() {
+            User actor = actor();
+            Inventory inventory = mock(Inventory.class);
+            when(adjustInventoryService.adjust(actor, 1L, 2L, 30)).thenReturn(inventory);
+
+            assertSame(inventory, useCase.adjustInventory(actor, 1L, 2L, 30));
+        }
     }
-      @Test
-    void publicAccessDelegatesTheLogin() {
-        LoginService login = mock(LoginService.class);
-        PublicAccessUseCaseImpl impl = new PublicAccessUseCaseImpl(mock(RegisterBuyerService.class),
-                login, mock(ConsultPublishedProductsService.class));
-        AuthenticationResult result = new AuthenticationResult("token-123", luis);
-        when(login.login("luis@mail.com", "secret123")).thenReturn(result);
 
-        assertSame(result, impl.login("luis@mail.com", "secret123"));
+    @Nested
+    class AdministratorRole {
+        @Mock ChangeBuyerCommercialStatusService changeBuyerCommercialStatusService;
+        @Mock GenerateSalesReportService generateSalesReportService;
+        @Mock ConsultRefundsService consultRefundsService;
+        @InjectMocks AdministratorUseCaseImpl useCase;
+
+        @Test
+        void changeBuyerCommercialStatusDelegates() {
+            User actor = actor();
+            Buyer buyer = mock(Buyer.class);
+            when(changeBuyerCommercialStatusService.change(actor, 4L, CommercialStatus.SUSPENDED))
+                    .thenReturn(buyer);
+
+            assertSame(buyer, useCase.changeBuyerCommercialStatus(actor, 4L, CommercialStatus.SUSPENDED));
+        }
+
+        @Test
+        void generateSalesReportDelegates() {
+            User actor = actor();
+            SalesReport report = mock(SalesReport.class);
+            when(generateSalesReportService.generate(actor)).thenReturn(report);
+
+            assertSame(report, useCase.generateSalesReport(actor));
+        }
+
+        @Test
+        void consultRefundsDelegates() {
+            User actor = actor();
+            List<Refund> refunds = List.of(mock(Refund.class));
+            when(consultRefundsService.consultRefunds(actor)).thenReturn(refunds);
+
+            assertSame(refunds, useCase.consultRefunds(actor));
+        }
     }
 
-    @Test
-    void administratorDelegatesTheUserStatusChange() {
-        ChangeUserStatusService changeStatus = mock(ChangeUserStatusService.class);
-        AdministratorUseCaseImpl impl = new AdministratorUseCaseImpl(mock(RegisterSellerService.class),
-                mock(CreateWarehouseService.class), mock(ApproveReturnService.class),
-                mock(RejectReturnService.class), mock(ProcessRefundService.class),
-                mock(RegisterInternalUserService.class), changeStatus, mock(ConsultUserService.class));
-        when(changeStatus.change(admin, 5L, UserStatus.BLOCKED)).thenReturn(luis);
+    @Nested
+    class SupervisorRole {
+        @Mock ConsultUserService consultUserService;
+        @Mock ConsultOrdersService consultOrdersService;
+        @Mock ConsultInvoicesService consultInvoicesService;
+        @Mock GenerateSalesReportService generateSalesReportService;
+        @InjectMocks SupervisorUseCaseImpl useCase;
 
-        assertSame(luis, impl.changeUserStatus(admin, 5L, UserStatus.BLOCKED));
-    }  
+        @Test
+        void consultUsersDelegates() {
+            User actor = actor();
+            List<User> users = List.of(actor);
+            when(consultUserService.consultUsers(actor)).thenReturn(users);
+
+            assertSame(users, useCase.consultUsers(actor));
+        }
+
+        @Test
+        void consultOrdersDelegates() {
+            User actor = actor();
+            List<Order> orders = List.of(mock(Order.class));
+            when(consultOrdersService.consultOrders(actor)).thenReturn(orders);
+
+            assertSame(orders, useCase.consultOrders(actor));
+        }
+
+        @Test
+        void generateSalesReportDelegates() {
+            User actor = actor();
+            SalesReport report = mock(SalesReport.class);
+            when(generateSalesReportService.generate(actor)).thenReturn(report);
+
+            assertSame(report, useCase.generateSalesReport(actor));
+        }
+    }
 }
