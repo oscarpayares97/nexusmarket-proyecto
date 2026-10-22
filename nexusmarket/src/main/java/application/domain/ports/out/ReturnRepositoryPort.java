@@ -13,5 +13,7 @@ public interface ReturnRepositoryPort {
 
     List<ReturnRequest> findByOrderId(Long orderId);
 
+    List<ReturnRequest> findByBuyerId(Long buyerId);
+
     List<ReturnRequest> findAll();
 }

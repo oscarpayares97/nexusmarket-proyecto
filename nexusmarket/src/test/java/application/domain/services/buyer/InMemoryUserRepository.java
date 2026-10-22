@@ -31,7 +31,7 @@ class InMemoryUserRepository implements UserRepositoryPort {
     @Override
     public Optional<User> findByEmail(String email) {
         for (User user : users.values()) {
-            if (user.getEmail().equalsIgnoreCase(email)) {
+               if (user.getEmail().value().equalsIgnoreCase(email)) {
                 return Optional.of(user);
             }
         }
@@ -41,7 +41,7 @@ class InMemoryUserRepository implements UserRepositoryPort {
     @Override
     public boolean existsByDocument(String document) {
         for (User user : users.values()) {
-            if (user.getDocument().equals(document)) {
+               if (user.getDocument().value().equals(document)) {
                 return true;
             }
         }

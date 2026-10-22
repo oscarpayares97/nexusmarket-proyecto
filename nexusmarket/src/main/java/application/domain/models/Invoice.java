@@ -48,7 +48,7 @@ public class Invoice {
             throw new InvalidStatusTransitionException("Solo se puede emitir una factura para un pedido pagado.");
         }
         return new Invoice(null, order.getId(), buyer.getId(), buyer.getFullName(),
-                buyer.getDocument(), order.getItems(), order.total(), LocalDateTime.now());
+                   buyer.getDocument().value(), order.getItems(), order.total(), LocalDateTime.now());
     }
 
     public void assignId(Long id) {
